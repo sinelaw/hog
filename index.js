@@ -1,12 +1,16 @@
-#!/usr/bin/env node
+//#!/usr/bin/env node
 
-var 
-    exec  = require('child_process').exec
-  , Maybe = require('data.maybe')
-  ;
-
-const HOG_DEFAULT = "mem";
-const QUOTA = 25;
+// var 
+//     exec  = require('child_process').exec
+//   , Maybe = require('data.maybe')
+//   ;
+(function(process, console, Math, exec) {
+    var Maybe = {
+        Just: function(x) { return x; },
+        Nothing: function() { return undefined; }
+    };
+var HOG_DEFAULT = "mem";
+var QUOTA = 25;
 
 // data Hog = { name :: String, mem :: Number, cpu :: Number }
 
@@ -14,7 +18,7 @@ const QUOTA = 25;
 
 //  head :: [a] -> Maybe a
 var head = function(l) {
-  return l.length ?
+  return l.length > 0 ?
           Maybe.Just(l[0]) :
           Maybe.Nothing();
 }
@@ -28,14 +32,14 @@ var element = function(l, i) {
 
 //  tail :: [a] -> Maybe [a]
 var tail = function(l) {
-  return l.length ?
+  return l.length > 0 ?
           Maybe.Just(l.splice(1, l.length)) :
           Maybe.Nothing();
 }
 
 //  last :: [a] -> Maybe a
 var last = function(l) {
-  return l.length ?
+  return l.length > 0 ?
           Maybe.Just(l[l.length - 1]) :
           Maybe.Nothing();
 }
@@ -62,7 +66,7 @@ var internalError = function(err) {
 var inb4 = function(args, err, errout) {
   var _h = last(args).get();
 
-  if (err || errout) internalError('process list could not be obtained because of ' + err);
+  if (err != '' || errout != '') internalError('process list could not be obtained because of ' + err);
 
   if (args.length === 3 && _h == '-h' || _h == '--help') {
     printUsage();
@@ -106,13 +110,13 @@ var showHog = function(hog, hoggy) {
 
 //  decimalPoint :: String -> Number
 var decimalPoint = function(num) {
-  if (num.length) return num / Math.pow(10, num.length);
+    if (num.length > 0) return parseInt(num, 10) / Math.pow(10, num.length);
   else return 0;
 }
 
 //  parseCpuMem :: String -> Number
 var parseCpuMem = function(mem) {
-  if (!mem) return 0;
+  if (mem == '') return 0;
 
   var nums = mem.split(',');
   return Number(head(nums).get()) + decimalPoint(tail(nums).get());
@@ -152,3 +156,5 @@ processes = exec('ps aux', function(err, stdout, stderr) {
   inb4(process.argv, err, stderr);
   main(stdout, process.argv);
 });
+
+}());
